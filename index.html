@@ -1,1 +1,204 @@
-<h1>Hello World</h1>
+<!doctype html>
+
+<html lang="en-au">
+<head>
+  <meta charset="utf-8">
+
+  <title>The HTML5 Herald</title>
+  <meta name="description" content="Saying hello to the world">
+  <meta name="author" content="blacksun1">
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+  <style>
+    body {
+      background: #F9F3D3;
+      color: #394050;
+      font-family: sans-serif;
+    }
+    h1 {
+      color: #821913;
+    }
+    #margheritasCrazyStars {
+      box-shadow: 3px 3px 3px rgba(0, 50, 100, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Hello World</h1>
+
+  <p>I only put this here because I could - and because <a href="https://github.com/blacksun1/blacksun1.github.io/issues/1">leogaggl asked me to</a>.</p>
+
+  <canvas id="margheritasCrazyStars"><p>Sorry but this code only works in a newer browser such as <a href="http://www.google.com/chrome">Google Chrome</a>.</p></canvas>
+
+  <p>Copyright &copy; 2016 Simon Bruce, See <a href="license">license</a></p>
+
+  <script>
+  (function(window, undefined) {
+
+      var WIDTH = 500,
+          HEIGHT = 400,
+          HALF_WIDTH = WIDTH / 2,
+          HALF_HEIGHT = HEIGHT / 2,
+          BACKGROUND_FILL = "#000",
+          NUMBER_OF_PARTICLES = 25,
+          particles,
+          canvas, ctx;
+
+      // Setup
+      canvas = document.getElementById("margheritasCrazyStars");
+          if (typeof(canvas) === "undefined" || canvas === null || typeof(canvas.getContext) === "undefined") {
+          return;
+      }
+      canvas.width = WIDTH;
+      canvas.height = HEIGHT;
+      ctx = canvas.getContext("2d");
+      if (typeof(ctx) === "undefined" || ctx === null) {
+          return;
+      }
+
+      init();
+      setInterval(doingLoop, 20);
+
+      function particle(x, y, vx, vy, gx, gy) {
+
+          this.x = x;
+          this.y = y;
+          this.velocityY = vy;
+          this.velocityX = vx;
+          this.gravityX = gx;
+          this.gravityY = gy;
+          this.fillStyle = getRandomColor();
+          this.angle = Math.floor(randomRange(0, 359));
+          this.rotationSpeed = Math.floor(randomRange(2, 5));
+
+          this.size = Math.floor(randomRange(20, 50));
+          this.update = function() {
+              this.velocityX = this.velocityX + this.gravityX;
+              this.velocityY = this.velocityY + this.gravityY;
+              this.x = (this.x + this.velocityX);
+              this.y = (this.y + this.velocityY);
+              this.size = this.size - 0.05;
+              this.angle = this.angle + this.rotationSpeed;
+              if (this.angle >= 360) {
+                  this.angle = this.angle - 360;
+              }
+          };
+
+          this.isVisible = function(width, height) {
+
+              return (this.x >= 0 && this.x <= width && this.y >= 0 && this.y <= height && this.size >= 0);
+          }
+      }
+
+      function init() {
+
+          var i;
+
+          ctx.fillStyle = BACKGROUND_FILL;
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+          particles = new Array(NUMBER_OF_PARTICLES);
+
+          for(i = 0; i < particles.length; i++) {
+              particles[i] = new particle(HALF_WIDTH, HALF_HEIGHT / 2, randomRange(-4, 4), randomRange(-4, 4), 0, 0.05);
+          }
+      }
+
+      function doingLoop() {
+
+          var anythingVisible = false,
+              p,
+              i;
+
+          ctx.fillStyle = BACKGROUND_FILL;
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = "source-over";
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = "source-over";
+          //ctx.globalCompositeOperation = "lighter";
+
+          for(i = 0; i < particles.length; i++) {
+              p = particles[i];
+
+              // draw a circle gradient dot
+              var w = p.size,
+                  h = p.size,
+                  x0 = p.x, y0 = p.y, r0 = p.size / 2,
+                  x1 = p.x + p.size, y1 = p.y + p.size, r1 = p.size,
+                  gradient = ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
+
+              gradient.addColorStop(0, p.fillStyle);
+              gradient.addColorStop(1, "#fff");
+              ctx.fillStyle = gradient;
+              draw5pointedStar(p.x, p.y, p.size / 2, p.angle);
+
+              // update the particle
+              p.update();
+              anythingVisible = anythingVisible || p.isVisible(WIDTH, HEIGHT);
+          }
+
+          if (!anythingVisible) {
+              init();
+          }
+      }
+
+      function draw5pointedStar(x, y, r, startAngle) {
+
+          var circleSteps = 5,
+              circleStepDegrees = 360 / circleSteps,
+              angle,
+              point = {},
+              i;
+
+          ctx.fillRect(x -1, y - 1, 3, 3);
+
+          ctx.beginPath();
+          var drawOrder = [0, 2, 4, 1, 3, 0];
+
+          for(i = 0; i < drawOrder.length; i++){
+              angle = startAngle + circleStepDegrees * (drawOrder[i]);
+              point.x = (r * Math.sin(degreesToRadians(angle)) * -1) + x;
+              point.y = (r * Math.cos(degreesToRadians(angle)) * -1) + y;
+              if (i === 0) {
+                  ctx.moveTo(point.x, point.y);
+              }
+              else {
+                  ctx.lineTo(point.x, point.y);
+              }
+          }
+
+          ctx.fill();
+      }
+
+      function degreesToRadians(degrees) {
+
+          return degrees * (Math.PI / 180);
+      }
+
+      function randomRange(lower, upper) {
+
+          return lower + Math.random() * (upper - lower + 1);
+      }
+
+      function getRandomColor() {
+
+          var letters = '0123456789ABCDEF'.split(''),
+              color = '#',
+              i;
+
+          for (i = 0; i < 6; i++ ) {
+              color += letters[Math.round(Math.random() * 15)];
+          }
+
+          return color;
+      }
+
+  }(window));
+  </script>
+</body>
+</html>
